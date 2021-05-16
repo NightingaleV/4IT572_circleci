@@ -3,6 +3,18 @@ vse: &vse
     - image: circleci/node:8.11.3
 
 version: 2.1
+orbs:
+  ansible-playbook: orbss/ansible-playbook@0.0.5
+
+ansible: &ansible
+  docker:
+    - image: 'circleci/python:3.8.9'
+      environment:
+        AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+        AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+        AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN
+        ANSIBLE_HOST_KEY_CHECKING: no
+
 jobs:
   build:
     <<: *vse
@@ -16,12 +28,20 @@ jobs:
           paths:
             - .
   deploy:
-    <<: *vse
+    <<: *ansible
     steps:
       - attach_workspace:
           at: .
+      - ansible-playbook/install
       - run:
-          command: ./node_modules/.bin/firebase deploy --token=$FIREBASE_DEPLOY_TOKEN
+          command: sudo pip install ansible boto boto3
+      - add_ssh_keys:
+          fingerprints:
+            - "22:db:42:fc:7b:63:1f:15:ab:45:f0:11:95:c7:00:a8"
+      - ansible-playbook/playbook:
+          playbook: ./ansible/deploy_to_aws.yaml
+          playbook-options: --user ubuntu
+
 workflows:
   version: 2.1
   build:
