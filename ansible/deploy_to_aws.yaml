@@ -15,7 +15,7 @@
         instance_type: t2.micro
         image: ami-013f17f36f8b1fefb
         region: us-east-1
-        key_name: devops
+        key_name: devops-slavik
         vpc_subnet_id: subnet-c1b5b28c
         assign_public_ip: yes
         wait: yes
